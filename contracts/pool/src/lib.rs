@@ -1818,8 +1818,8 @@ fn fund_invoice_request(
     );
 
     // #275: check utilization after deployment
+    // The caller already supplied the pool config; do not reload it.
     if tt.pool_value > 0 {
-        let config = get_config_cached(env)?;
         let utilization = ((tt.total_deployed as u128 * 10_000u128) / tt.pool_value as u128) as u32;
         if utilization > config.max_utilization_bps {
             // Revert the deployment
@@ -2353,7 +2353,7 @@ impl FundingPool {
         let usdc_received = (amount * rate_bps as i128) / 10_000i128;
 
         // #233: enforce maximum single-investor concentration limit
-        let config = get_config_cached(&env)?;
+        // Reuse the config loaded for minimum deposit and min_rate checks.
         if config.max_single_investor_bps < 10_000 {
             let new_investor_total = investor_position.deposited + usdc_received;
             let new_pool_total = tt.pool_value + usdc_received;
